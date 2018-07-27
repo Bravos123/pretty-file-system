@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="../data/styles/Happy-doodles.css">
+	<style>
+		#photoAlbum{
+			display: inline-block;
+			border: solid 1px #e8e8e8;
+			min-height: 300px;
+			margin-left:32px;
+			padding: 8px;
+			position: absolute;
+		}
+		#photo{
+			max-height: 400px;
+			max-width: 400px;
+		}
+		.bl{
+			display: block;
+			margin: 8px auto;
+		}
+	</style>
+</head>
+<body>
+	<a href="https://github.com/Bravos123/pretty-file-system"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+	
+<div id="fileSystem"></div>
+
+<div id="mirror"></div>
+
+<div id="photoAlbum">
+	<h2 id="title" class="bl">Image title</h2>
+	<img id="photo" class="bl">
+	<button id="change" class="bl">Change image</button>
+</div>
+
+
+
+
+<script src="../data/dist/prettyFileSystem.js"></script>
+<script>
+
+	var previewId;
+
+	var parameters = {
+		itemName: "File",
+		disableInteraction: false,
+		onlyUniqueNames: true,
+		createItemButtonOn: true
+	};
+	var system = new prettyFiles.init().getInit("fileSystem", parameters);
+
+	parameters = {
+		mirror: system
+	};
+	var mirror = new prettyFiles.init().getInit("mirror", parameters);
+
+	mirror.onClickFile = function(name, id, image){
+		alert("Clicked secondary file system:\n"+"Name: "+name+"\nId: "+id);
+	};
+
+	system.onCreateNewFile = function(name, id, proceed){
+		system.prompt("Image", "Include an image source", "", function(input){
+			if(input != null && input.replace(/ /g, '') != ''){
+				system.sticker = input;
+				proceed();
+			}
+		});
+	};
+
+	system.onClickFile = function(name, id, image){
+		previewId = id;
+		document.getElementById("title").innerHTML = name;
+		document.getElementById("photo").src = image;
+	};
+
+	system.onRenameItem = function(name, id, newName){
+		if(previewId == id){
+			document.getElementById("title").innerHTML = newName;
+		}
+	};
+
+	system.onDeleteFile = function(name, id){
+		if(previewId == id){
+			document.getElementById("title").innerHTML = "No image";
+			document.getElementById("photo").src = "";
+		}
+	};
+
+	document.getElementById("change").onclick = function(){
+		system.prompt("Image", "Include an image source", "", function(input){
+			if(input != null && input.replace(/ /g, '') != ''){
+				system.updateFileImage(previewId, input);
+				document.getElementById("photo").src = input;
+			}
+		});
+	};
+
+
+
+
+	system.insertData('[{"type":"folder","name":"Best commanders","contains":[{"type":"file","name":"Jhoira, Weatherlight captain","id":1,"image":"http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=443085&type=card"},{"type":"file","name":"Ishkanah, Grafwidow","id":2,"image":"http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=414463&type=card"}],"id":0},{"type":"folder","name":"Funny cards","contains":[{"type":"file","name":"Gravecrawler","id":4,"image":"http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=409635&type=card"},{"type":"folder","name":"funny but bad","contains":[{"type":"file","name":"Urza\'s Bauble","id":6,"image":"http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=159247&type=card"}],"id":5}],"id":3}]');
+</script>
+</body>
+</html>

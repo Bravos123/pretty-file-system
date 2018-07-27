@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="../data/styles/Happy-doodles.css">
+	<style>
+		#photoAlbum{
+			display: inline-block;
+			border: solid 1px #e8e8e8;
+			min-height: 300px;
+			position:absolute;
+			margin-left:32px;
+			padding: 8px;
+		}
+		#photo{
+			max-height: 400px;
+			max-width: 400px;
+		}
+		.bl{
+			display: block;
+			margin: 8px auto;
+		}
+	</style>
+</head>
+<body>
+	<a href="https://github.com/Bravos123/pretty-file-system"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+	
+<select style="display:block;">
+	<option onclick="switchCss('../data/styles/Happy-doodles.css', 0);">Happy-doodles</option>
+	<option onclick="switchCss('../data/styles/terminal.css', 0);">terminal</option>
+	<option onclick="switchCss('../data/styles/red.css', 0);">red</option>
+	<option onclick="switchCss('../data/styles/simple.css', 0);">simple</option>
+</select>
+<div id="fileSystem"></div>
+
+
+<div id="photoAlbum">
+	<h2 id="title" class="bl">Image title</h2>
+	<img id="photo" class="bl">
+</div>
+
+
+<script src="../data/dist/prettyFileSystem.js"></script>
+<script>
+
+	var previewId;
+
+	var parameters = {
+		itemName: "File",
+		disableInteraction: false,
+		onlyUniqueNames: true,
+		createItemButtonOn: true,
+		canResize: false
+	};
+	var system = new prettyFiles.init().getInit("fileSystem", parameters);
+
+
+
+
+	system.onClickFile = function(name, id, image){
+		previewId = id;
+		document.getElementById("title").innerHTML = name;
+		document.getElementById("photo").src = image;
+	};
+
+
+
+
+
+	system.insertData('[{"type":"folder","name":"Best commanders","contains":[{"type":"file","name":"Jhoira, Weatherlight captain","id":1,"image":"http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=443085&type=card"},{"type":"file","name":"Ishkanah, Grafwidow","id":2,"image":"http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=414463&type=card"}],"id":0},{"type":"folder","name":"Funny cards","contains":[{"type":"file","name":"Gravecrawler","id":4,"image":"http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=409635&type=card"},{"type":"folder","name":"funny but bad","contains":[{"type":"file","name":"Urza\'s Bauble","id":6,"image":"http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=159247&type=card"}],"id":5}],"id":3}]');
+
+
+
+
+	function switchCss(cssFile, cssLinkIndex){
+		var oldlink = document.getElementsByTagName("link").item(cssLinkIndex);
+
+	    var newlink = document.createElement("link");
+	    newlink.setAttribute("rel", "stylesheet");
+	    newlink.setAttribute("type", "text/css");
+	    newlink.setAttribute("href", cssFile);
+
+	    document.getElementsByTagName("head").item(0).replaceChild(newlink, oldlink);
+	}
+</script>
+
+</body>
+</html>
