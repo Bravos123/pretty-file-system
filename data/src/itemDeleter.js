@@ -13,7 +13,7 @@ define([], function(){
 				if(interact.selectedItem.type == "folder"){
 					messageHandler.confirm("Delete", "Are you sure you want to delete the folder \""+interact.selectedItem.name+"\" and all it's content?", function(val){
 						if(val){
-							interact.hashedEntries[interact.selectedItem.id] = undefined;
+							delete interact.hashedEntries[interact.selectedItem.id];
 							deleteFolder(interact, true);
 							/*if(interact.selectedItem.copyAssociates != undefined){
 								for(var i=0; i<interact.selectedItem.copyAssociates.length; i++){
@@ -23,12 +23,13 @@ define([], function(){
 							
 							deleteFile(interact.selectedItem, interact.selectedItem.parent, true);
 							interact.selectedItem = rootContent;
+
 						}
 					});
 				}else{
 					messageHandler.confirm("Delete", "Are you sure you want to delete the file \""+interact.selectedItem.name+"\"?", function(val){
 						if(val){
-							interact.hashedEntries[interact.selectedItem.id] = undefined;
+							delete interact.hashedEntries[interact.selectedItem.id];
 							deleteFile(interact.selectedItem, interact.selectedItem.parent, true);
 							interact.selectedItem = rootContent;
 						}
@@ -40,32 +41,9 @@ define([], function(){
 		}
 
 
-		/*
-		namesOfFolders
-		namesOfFiles
-		*/
+
 		function deleteFile(deleteItem, parent, runOnDelete){
-			var haystack;
-			if(deleteItem.type == "folder"){
-				haystack = interact.namesOfFolders;
-			}else{
-				haystack = interact.namesOfFiles;
-			}
-			
-			var targetId;
-			for(var i=0; i<haystack.length; i++){
-				if(haystack[i] == deleteItem.name){
-					targetId = deleteItem.id;
-					haystack.splice(i,1);
-					break;
-				}
-			}
-
-			if(runOnDelete){
-				outsideFunctions.onDeleteFile(deleteItem.name, deleteItem.id);
-			}
-
-			
+			var deletedName = deleteItem.name, deletedId = deleteItem.id;
 
 			for(var i=0; i<interact.sharedResourceFolderJs.length; i++){
 				var copyElement = interact.sharedResourceFolderJs[i].getHashes()[targetId].element;
@@ -90,7 +68,9 @@ define([], function(){
 			}
 
 		
-
+			if(runOnDelete){
+				outsideFunctions.onDeleteFile(deletedName, deletedId);
+			}
 		}
 		
 

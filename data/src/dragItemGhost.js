@@ -8,6 +8,7 @@ define([], function(){
 	function initModule(){
 		var ghost = document.createElement("div");
 		ghost.className = "fileExplorerGhost";
+		ghost.style.zIndex = "99999999";
 
 		var icon = document.createElement("div");
 		icon.className = "fileExplorerImagePreview";

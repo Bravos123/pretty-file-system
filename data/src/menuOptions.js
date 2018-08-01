@@ -121,9 +121,11 @@ define(["itemDeleter", "moveItem"], function(itemDeleter, moveItem){
 			currentItem.element.style.opacity = "0.36";
 			interact.mouseDrag = false;
 			interact.draging = currentItem;
+
 			if(interact.buttonCreateItems != undefined){
 				interact.buttonCreateItems.style.display = "none";
 			}
+			
 			interact.movingIndicator.style.display = "inline-block";
 		});
 		addMenuOption("Rename", function(){
@@ -277,18 +279,10 @@ define(["itemDeleter", "moveItem"], function(itemDeleter, moveItem){
 			var option = document.createElement("div");
 			option.className = "fileExplorerMenuEntry";
 			option.innerHTML = name;
-			option.onclick = func;
 
-
-			/*option.addEventListener("mouseleave", function(){
-				option.className = "fileExplorerMenuEntry fileExplorerMenuC1";
+			option.addEventListener("mouseup", function(){
+				func();
 			});
-
-
-			option.addEventListener("mouseenter", function(){
-				option.className = "fileExplorerMenuEntry fileExplorerMenuLight";
-			});*/
-			
 
 			menu.appendChild(option);
 

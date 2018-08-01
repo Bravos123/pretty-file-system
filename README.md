@@ -60,6 +60,9 @@ will be selected, otherwise if *identifier* is a number the item with that id wi
 ###### flush()
 Removes all items from the file system window. The items are not deleted. The file system is only resetted.
 
+###### deSelect()
+Deselects currently selected item.
+
 ###### prompt(headerText, paragraph, defaultText, onComplete)
 Allows you to use the built in custom prompt. This asks the user for an input and executes *onComplete* when complete.
 *onComplete* is executed with one paramater that is the user input.
@@ -135,9 +138,14 @@ Example:
 system.onCreateNewFile = function(name, id, procced){
   system.prompt("Image", "Include an image source", "", function(input){
 			if(input != null && input.replace(/ /g, '') != ''){
+<<<<<<< HEAD
+				system.sticker = input;
+				proceed();
+=======
 				if(proceed()){
 					system.sticker = input;
 				}
+>>>>>>> bug fixes
 			}
 		});
 };

@@ -24,7 +24,6 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 			idCounter: 0,
 			params: undefined,
 			namesOfFolders: [],
-			namesOfFiles: [],
 			newlyCreatedFile: undefined
 		};
 		var messageHandler = new inputPrompt.init();
@@ -42,9 +41,12 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 			/*triggerCreateItem: function(type, givenName, forseCompletion, triggerSuccessFunc){
 				itemCreate.userCreateItem(type, givenName, forseCompletion, triggerSuccessFunc);
 			},*/
-			/*getContent: function(){
+			getContent: function(){
 				return rootContent.content;
-			},*/
+			},
+			setDivContainer: function(divIn){
+				divIn.appendChild(outsideFunctions.thisMainContainer);
+			},
 			thisMainContainer: undefined,
 
 
@@ -77,14 +79,36 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 
 			//Used by user
 			sticker: undefined,
-			updateFileImage: function(id, img){
-				if(interact.hashedEntries[id] != undefined){
-					if(interact.hashedEntries[id].type == "file"){
-						interact.hashedEntries[id].element.getElementsByTagName("img")[0].src = img;
-						interact.hashedEntries[id].image = img;
+			updateFileImage: function(idOrName, img){
+				var idPick;
+				if(typeof idOrName == "string"){
+					var foundId = false;
+					//console.log("interact.idCounter: "+interact.idCounter);
+					for(var i=0; i<interact.idCounter; i++){
+						if(interact.hashedEntries[i] != undefined){
+							if(interact.hashedEntries[i].name == idOrName){
+								//console.log("found:");
+								//console.log(interact.hashedEntries[i]);
+								idPick = interact.hashedEntries[i].id;
+								foundId = true;
+								break;
+							}
+						}
+					}
+					if(!foundId){
+						return;
+					}
+				}else{
+					idPick = idOrName;
+				}
+
+				if(interact.hashedEntries[idPick] != undefined){
+					if(interact.hashedEntries[idPick].type == "file"){
+						interact.hashedEntries[idPick].element.getElementsByTagName("div")[0].style.backgroundImage = "url('"+img+"')";
+						interact.hashedEntries[idPick].image = img;
 						for(var i=0; i<interact.sharedResourceFolderJs.length; i++){
-							interact.sharedResourceFolderJs[i].getHashes()[id].element.getElementsByTagName("img")[0].src = img;
-							interact.sharedResourceFolderJs[i].getHashes()[id].image = img;
+							interact.sharedResourceFolderJs[i].getHashes()[idPick].element.getElementsByTagName("div")[0].style.backgroundImage = "url('"+img+"')";
+							interact.sharedResourceFolderJs[i].getHashes()[idPick].image = img;
 						}
 					}
 					outsideFunctions.sticker = undefined;
@@ -96,6 +120,10 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 				return helper.checkForName(rootContent.content, atPosition, position);
 			},
 			insertData: function(dataArray){
+				if(dataArray == undefined){
+					console.warn("Inserted data is undefined");
+					return;
+				}
 				if(dataArray.length != 0 && dataArray.replace(/ /g, '') != ''){
 					dataArray = JSON.parse(dataArray);
 					helper.parseMetaData(rootContent, dataArray);
@@ -118,6 +146,9 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 			},
 			selectItem: function(identifier){
 				helper.selectFile(rootContent, identifier);
+			},
+			deSelect: function(){
+				helper.deSelect();
 			},
 			flush: function(){
 				resetMe();
@@ -179,7 +210,6 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 			interact.idCounter = 0;
 			rootContent.content.length = 0;
 			interact.namesOfFolders.length = 0;
-			interact.namesOfFiles.length = 0;
 			interact.hashedEntries.length = 0;
 		}
 
@@ -210,6 +240,8 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 			}else{
 				divIn = document.createElement("div");
 			}
+
+			outsideFunctions.thisMainContainer = divIn;
 			
 			var realContainer = document.createElement("div");
 			

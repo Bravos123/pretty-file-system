@@ -12,44 +12,82 @@ define([], function(){
 					this.parseMetaData(createdFolder, data[i].contains);
 				}else if(data[i].type == "file"){
 					interact.selectedItem = putIn;
-					interact.namesOfFiles.push(data[i].name);
 					outsideFunctions.sticker = data[i].image;
 					itemCreate.createFile(data[i].name);
 				}
 			}
+			
 		}
 
 
 
-		this.selectFile = function(inContent, nmeId){
-			for(var i=0; i<inContent.length; i++){
-				if(inContent[i].type == "folder"){
-					selectFile(inContent[i].contains, nmeId);
-				}else if(inContent[i].type == "file"){
-					if(typeof nmeId == "string"){
-						if(inContent[i].name == nmeId){
-							interact.selectedItem = inContent[i];
-							break;
-						}
-					}else if(typeof nmeId == "number"){
-						if(inContent[i].id == nmeId){
-							interact.selectedItem = inContent[i];
-							break;
-						}
-					}
+		this.applyItemClass = function(item, classAdd){
+			if(item.type == "file"){
+				if(item.element.className != classAdd){
+					item.element.className = classAdd;
+				}
+			}else if(item.type == "folder"){
+				if(item.element.className != classAdd){
+					item.element.childNodes[0].className = classAdd;
 				}
 			}
 		}
 
+		this.deSelectItem = function(previousSelected){
+			if(previousSelected != undefined){
+				if(previousSelected.element != undefined){
+					this.applyItemClass(previousSelected, "fileExplorerItem");
+				}
+			}
+		}
+
+		this.deSelect = function(){
+			this.deSelectItem(interact.selectedItem);
+		}
+
+		this.selectFile = function(inContent, nmeId){
+			this.deSelectItem(interact.selectedItem);
+
+			if(typeof nmeId == "number" && nmeId < 0){
+				return;
+			}
+			
+			var id;
+			if(typeof nmeId == "string"){
+				for(var i=0; i<interact.idCounter; i++){
+					if(interact.hashedEntries[i] != undefined){
+						if(interact.hashedEntries[i].name == nmeId){
+							id = interact.hashedEntries[i].id;
+							break;
+						}
+					}
+				}
+			}else{
+				id = nmeId;
+			}
+
+			if(id != undefined){
+				if(interact.hashedEntries[id] != undefined){
+					if(interact.hashedEntries[id].type == "file"){
+						interact.selectedItem = interact.hashedEntries[id];
+						this.applyItemClass(interact.selectedItem, "fileExplorerItemSelectedColor");
+					}
+				}
+			}
+			
+		}
+
+
+
+
+
+		
 
 
 		this.checkForName = function(inContent, atPosition, position){
 			for(var i=0; i<inContent.length; i++){
 				if(inContent[i].type == "folder"){
-					var seartchReturn = this.checkForName(inContent[i].content, atPosition, position);
-					if(seartchReturn != undefined){
-						return seartchReturn;
-					}
+					return this.checkForName(inContent[i].content, atPosition, position);
 				}else if(inContent[i].type == "file"){
 					if(atPosition.v === position){
 						return inContent[i].name;
@@ -59,7 +97,6 @@ define([], function(){
 			}
 			return undefined;
 		}
-
 
 
 
@@ -77,7 +114,7 @@ define([], function(){
 				}else if(contentReadFrom[i].type == "file"){
 					var fileImage = undefined;
 					if(contentReadFrom[i].image != undefined){
-						fileImage = contentReadFrom[i].element.getElementsByTagName("img")[0].src;
+						fileImage = contentReadFrom[i].image;//contentReadFrom[i].element.getElementsByTagName("div")[0].src;
 					}
 					contentObject = {
 						type: contentReadFrom[i].type,

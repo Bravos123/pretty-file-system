@@ -114,22 +114,23 @@ define('itemDeleter',[], function(){
 				if(interact.selectedItem.type == "folder"){
 					messageHandler.confirm("Delete", "Are you sure you want to delete the folder \""+interact.selectedItem.name+"\" and all it's content?", function(val){
 						if(val){
-							interact.hashedEntries[interact.selectedItem.id] = undefined;
+							delete interact.hashedEntries[interact.selectedItem.id];
 							deleteFolder(interact, true);
-							if(interact.selectedItem.copyAssociates != undefined){
+							/*if(interact.selectedItem.copyAssociates != undefined){
 								for(var i=0; i<interact.selectedItem.copyAssociates.length; i++){
 									interact.selectedItem.copyAssociates[i].element.parentElement.removeChild(interact.selectedItem.copyAssociates[i].element);
 								}
-							}
+							}*/
 							
 							deleteFile(interact.selectedItem, interact.selectedItem.parent, true);
 							interact.selectedItem = rootContent;
+
 						}
 					});
 				}else{
 					messageHandler.confirm("Delete", "Are you sure you want to delete the file \""+interact.selectedItem.name+"\"?", function(val){
 						if(val){
-							interact.hashedEntries[interact.selectedItem.id] = undefined;
+							delete interact.hashedEntries[interact.selectedItem.id];
 							deleteFile(interact.selectedItem, interact.selectedItem.parent, true);
 							interact.selectedItem = rootContent;
 						}
@@ -141,32 +142,9 @@ define('itemDeleter',[], function(){
 		}
 
 
-		/*
-		namesOfFolders
-		namesOfFiles
-		*/
+
 		function deleteFile(deleteItem, parent, runOnDelete){
-			var haystack;
-			if(deleteItem.type == "folder"){
-				haystack = interact.namesOfFolders;
-			}else{
-				haystack = interact.namesOfFiles;
-			}
-			
-			var targetId;
-			for(var i=0; i<haystack.length; i++){
-				if(haystack[i] == deleteItem.name){
-					targetId = deleteItem.id;
-					haystack.splice(i,1);
-					break;
-				}
-			}
-
-			if(runOnDelete){
-				outsideFunctions.onDeleteFile(deleteItem.name, deleteItem.id);
-			}
-
-			
+			var deletedName = deleteItem.name, deletedId = deleteItem.id;
 
 			for(var i=0; i<interact.sharedResourceFolderJs.length; i++){
 				var copyElement = interact.sharedResourceFolderJs[i].getHashes()[targetId].element;
@@ -191,14 +169,16 @@ define('itemDeleter',[], function(){
 			}
 
 		
-
+			if(runOnDelete){
+				outsideFunctions.onDeleteFile(deletedName, deletedId);
+			}
 		}
 		
 
 		function deleteFolder(item, runOnDelete){
 			var folderName = item.selectedItem.name;
 
-			for(var i = 0; i<item.selectedItem.content.length; i++){
+			for(var i = item.selectedItem.content.length-1; i!=0; i--){
 				if(item.selectedItem.content[i].type == "folder"){
 					deleteFolder(item.selectedItem.content[i], runOnDelete);
 				}else{
@@ -206,7 +186,7 @@ define('itemDeleter',[], function(){
 				}
 			}
 
-			for(var i = 0; i<item.selectedItem.parent.content.length; i++){
+			for(var i = item.selectedItem.parent.content.length-1; i!=0; i--){
 				if(item.selectedItem.parent.content[i].type == "folder" && item.selectedItem.parent.content[i].name == item.selectedItem.name){
 					item.selectedItem.parent.content.splice(i, 1);
 				}
@@ -360,7 +340,9 @@ define('menuOptions',["itemDeleter", "moveItem"], function(itemDeleter, moveItem
 			currentItem.element.style.opacity = "1";
 			interact.draging = undefined;
 			interact.movingIndicator.style.display = "none";
-			interact.buttonCreateItems.style.display = "block";
+			if(interact.buttonCreateItems != undefined){
+				interact.buttonCreateItems.style.display = "block";
+			}
 		};
 		if(interact.movingIndicator != undefined){
 			interact.movingIndicator.appendChild(cencelMovingButton);
@@ -440,8 +422,9 @@ define('menuOptions',["itemDeleter", "moveItem"], function(itemDeleter, moveItem
 				
 			}
 			
-
-			interact.buttonCreateItems.style.display = "block";
+			if(interact.buttonCreateItems != undefined){
+				interact.buttonCreateItems.style.display = "block";
+			}
 			interact.movingIndicator.className = "fileExplorerMI";
 
 		};
@@ -463,16 +446,32 @@ define('menuOptions',["itemDeleter", "moveItem"], function(itemDeleter, moveItem
 			interact.mouseDrag = false;
 			interact.draging = currentItem;
 
-			interact.buttonCreateItems.style.display = "none";
+			if(interact.buttonCreateItems != undefined){
+				interact.buttonCreateItems.style.display = "none";
+			}
+			
 			interact.movingIndicator.style.display = "inline-block";
 		});
 		addMenuOption("Rename", function(){
 			removeMenu();
 			messageHandler.prompt("Rename", "Enter a new name: ", "Name", function(n){
 				if(n != null){
-					outsideFunctions.onRenameItem(currentItem.name, currentItem.id, n);
-					currentItem.name = n;
-					currentItem.element.getElementsByTagName("span")[0].innerHTML = n;
+					var increment = 0;
+					var nameTest = n;
+					while(checkFileNameAlreayExists(currentItem.parent.content, nameTest)){
+						nameTest = increment+"_"+n;
+						increment++;
+					}
+
+					for(var i=0; i<interact.sharedResourceFolderJs.length; i++){
+						var renameItem = interact.sharedResourceFolderJs[i].getHashes()[currentItem.id];
+						renameItem.name = nameTest;
+						renameItem.element.getElementsByTagName("span")[0].innerHTML = nameTest;
+					}
+
+					outsideFunctions.onRenameItem(currentItem.name, currentItem.id, nameTest);
+					currentItem.name = nameTest;
+					currentItem.element.getElementsByTagName("span")[0].innerHTML = nameTest;
 				}
 			});
 		});
@@ -490,8 +489,8 @@ define('menuOptions',["itemDeleter", "moveItem"], function(itemDeleter, moveItem
 					if(n == currentItem.name){
 						n = currentItem.name;
 					}
-					var increment = 1;
-					var nameTest = increment+"_"+n;
+					var increment = 0;
+					var nameTest = n;
 					while(checkFileNameAlreayExists(currentItem.parent.content, nameTest)){
 						nameTest = increment+"_"+n;
 						increment++;
@@ -604,18 +603,10 @@ define('menuOptions',["itemDeleter", "moveItem"], function(itemDeleter, moveItem
 			var option = document.createElement("div");
 			option.className = "fileExplorerMenuEntry";
 			option.innerHTML = name;
-			option.onclick = func;
 
-
-			/*option.addEventListener("mouseleave", function(){
-				option.className = "fileExplorerMenuEntry fileExplorerMenuC1";
+			option.addEventListener("mouseup", function(){
+				func();
 			});
-
-
-			option.addEventListener("mouseenter", function(){
-				option.className = "fileExplorerMenuEntry fileExplorerMenuLight";
-			});*/
-			
 
 			menu.appendChild(option);
 
@@ -657,6 +648,7 @@ define('dragItemGhost',[], function(){
 	function initModule(){
 		var ghost = document.createElement("div");
 		ghost.className = "fileExplorerGhost";
+		ghost.style.zIndex = "99999999";
 
 		var icon = document.createElement("div");
 		icon.className = "fileExplorerImagePreview";
@@ -1048,16 +1040,12 @@ define('itemCreation',["folderRenderer",
 					if(name != null && name.replace(/ /g, '') != ''){
 						var nameExists = false;
 						if(interact.params.onlyUniqueNames){
-							for(var i=0; i<interact.namesOfFiles.length; i++){
-								if(interact.namesOfFiles[i] == name){
-									nameExists = true;
-									break;
-								}
+							if(nameExistsGlobal(name)){
+								nameExists = true;
 							}
 						}
 						if(!nameExists){
 							createItem(name, true);
-							interact.namesOfFiles.push(name);
 						}else{
 							var errMess = "An item with that name already exists";
 							if(name.replace(/ /g, '') == ''){
@@ -1160,7 +1148,7 @@ define('itemCreation',["folderRenderer",
 				if(onCreate){
 					if(outsideFunctions.onCreateNewFile != null){
 						outsideFunctions.onCreateNewFile(fileName, interact.idCounter, function(){
-							createItem(fileName, onCreate);
+							return createItem(fileName, onCreate);
 						});
 					}else{
 						createItem(fileName, onCreate);
@@ -1182,7 +1170,7 @@ define('itemCreation',["folderRenderer",
 			if(interact.selectedItem.content == undefined){//We have selected a file, take it's parent folder
 				if(checkFileNameAlreayExists(interact.selectedItem.parent.content, fileName) && onCreate){
 					messageHandler.alert("Alert", "There already exists an item with that name in target folder.");
-					return;
+					return false;
 				}
 				interact.selectedItem.parent.content.push(newFile);
 				newFile.parent = interact.selectedItem.parent;
@@ -1190,7 +1178,7 @@ define('itemCreation',["folderRenderer",
 			}else{//We have selected a folder, use it
 				if(checkFileNameAlreayExists(interact.selectedItem.content, fileName) && onCreate){
 					messageHandler.alert("Alert", "There already exists an item with that name in target folder.");
-					return;
+					return false;
 				}
 				interact.selectedItem.content.push(newFile);
 				newFile.parent = interact.selectedItem;
@@ -1227,25 +1215,24 @@ define('itemCreation',["folderRenderer",
 			outsideFunctions.sticker = undefined;
 
 			interact.hashedEntries[newFile.id] = newFile;
-			interact.namesOfFiles.push(newFile.name);
 
 			interact.newlyCreatedFile = newFile;
 			//return newFile;
+			return true;
 		}
 
 
 
 		function checkFileNameAlreayExists(contentArr, targetName){
 			if(interact.params.onlyUniqueNames){
-				for(var i=0; i<interact.namesOfFiles.length; i++){
-					if(interact.namesOfFiles[i] == targetName){
-						return true;
-					}
+				if(nameExistsGlobal(targetName)){
+					return true;
 				}
 			}
 
 			for(var i=0; i<contentArr.length; i++){
 				if(contentArr[i].name == targetName){
+					console.log("here2 ");
 					return true;
 				}
 			}
@@ -1253,6 +1240,16 @@ define('itemCreation',["folderRenderer",
 			return false;
 		}
 
+
+		function nameExistsGlobal(name){
+			var keys = Object.keys(interact.hashedEntries);
+			for(var i=0; i<keys.length; i++){
+				if(interact.hashedEntries[keys[i]].name == name){
+					return true;
+				}
+			}
+			return false;
+		}
 
 		function checkFolderNameAlreayExists(contentArr, targetName){
 			if(interact.params.onlyUniqueNames){
@@ -1529,41 +1526,82 @@ define('helpFunctions',[], function(){
 					this.parseMetaData(createdFolder, data[i].contains);
 				}else if(data[i].type == "file"){
 					interact.selectedItem = putIn;
-					interact.namesOfFiles.push(data[i].name);
 					outsideFunctions.sticker = data[i].image;
 					itemCreate.createFile(data[i].name);
 				}
 			}
+			
 		}
 
 
 
-		this.selectFile = function(inContent, nmeId){
-			for(var i=0; i<inContent.length; i++){
-				if(inContent[i].type == "folder"){
-					selectFile(inContent[i].contains, nmeId);
-				}else if(inContent[i].type == "file"){
-					if(typeof nmeId == "string"){
-						if(inContent[i].name == nmeId){
-							interact.selectedItem = inContent[i];
-							break;
-						}
-					}else if(typeof nmeId == "number"){
-						if(inContent[i].id == nmeId){
-							interact.selectedItem = inContent[i];
-							break;
-						}
-					}
+		this.applyItemClass = function(item, classAdd){
+			if(item.type == "file"){
+				if(item.element.className != classAdd){
+					item.element.className = classAdd;
+				}
+			}else if(item.type == "folder"){
+				if(item.element.className != classAdd){
+					item.element.childNodes[0].className = classAdd;
 				}
 			}
 		}
 
+		this.deSelectItem = function(previousSelected){
+			if(previousSelected != undefined){
+				if(previousSelected.element != undefined){
+					this.applyItemClass(previousSelected, "fileExplorerItem");
+				}
+			}
+		}
+
+		this.deSelect = function(){
+			this.deSelectItem(interact.selectedItem);
+		}
+
+		this.selectFile = function(inContent, nmeId){
+			this.deSelectItem(interact.selectedItem);
+
+			if(typeof nmeId == "number" && nmeId < 0){
+				return;
+			}
+			
+			var id;
+			if(typeof nmeId == "string"){
+				for(var i=0; i<interact.idCounter; i++){
+					if(interact.hashedEntries[i] != undefined){
+						if(interact.hashedEntries[i].name == nmeId){
+							id = interact.hashedEntries[i].id;
+							break;
+						}
+					}
+				}
+			}else{
+				id = nmeId;
+			}
+
+			if(id != undefined){
+				if(interact.hashedEntries[id] != undefined){
+					if(interact.hashedEntries[id].type == "file"){
+						interact.selectedItem = interact.hashedEntries[id];
+						this.applyItemClass(interact.selectedItem, "fileExplorerItemSelectedColor");
+					}
+				}
+			}
+			
+		}
+
+
+
+
+
+		
 
 
 		this.checkForName = function(inContent, atPosition, position){
 			for(var i=0; i<inContent.length; i++){
 				if(inContent[i].type == "folder"){
-					return this.checkForName(inContent[i].contains, atPosition, position);
+					return this.checkForName(inContent[i].content, atPosition, position);
 				}else if(inContent[i].type == "file"){
 					if(atPosition.v === position){
 						return inContent[i].name;
@@ -1571,7 +1609,7 @@ define('helpFunctions',[], function(){
 					atPosition.v++;
 				}
 			}
-			return 0;
+			return undefined;
 		}
 
 
@@ -1590,7 +1628,7 @@ define('helpFunctions',[], function(){
 				}else if(contentReadFrom[i].type == "file"){
 					var fileImage = undefined;
 					if(contentReadFrom[i].image != undefined){
-						fileImage = contentReadFrom[i].element.getElementsByTagName("img")[0].src;
+						fileImage = contentReadFrom[i].image;//contentReadFrom[i].element.getElementsByTagName("div")[0].src;
 					}
 					contentObject = {
 						type: contentReadFrom[i].type,
@@ -1673,7 +1711,6 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 			idCounter: 0,
 			params: undefined,
 			namesOfFolders: [],
-			namesOfFiles: [],
 			newlyCreatedFile: undefined
 		};
 		var messageHandler = new inputPrompt.init();
@@ -1691,9 +1728,12 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 			/*triggerCreateItem: function(type, givenName, forseCompletion, triggerSuccessFunc){
 				itemCreate.userCreateItem(type, givenName, forseCompletion, triggerSuccessFunc);
 			},*/
-			/*getContent: function(){
+			getContent: function(){
 				return rootContent.content;
-			},*/
+			},
+			setDivContainer: function(divIn){
+				divIn.appendChild(outsideFunctions.thisMainContainer);
+			},
 			thisMainContainer: undefined,
 
 
@@ -1726,14 +1766,36 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 
 			//Used by user
 			sticker: undefined,
-			updateFileImage: function(id, img){
-				if(interact.hashedEntries[id] != undefined){
-					if(interact.hashedEntries[id].type == "file"){
-						interact.hashedEntries[id].element.getElementsByTagName("img")[0].src = img;
-						interact.hashedEntries[id].image = img;
+			updateFileImage: function(idOrName, img){
+				var idPick;
+				if(typeof idOrName == "string"){
+					var foundId = false;
+					//console.log("interact.idCounter: "+interact.idCounter);
+					for(var i=0; i<interact.idCounter; i++){
+						if(interact.hashedEntries[i] != undefined){
+							if(interact.hashedEntries[i].name == idOrName){
+								//console.log("found:");
+								//console.log(interact.hashedEntries[i]);
+								idPick = interact.hashedEntries[i].id;
+								foundId = true;
+								break;
+							}
+						}
+					}
+					if(!foundId){
+						return;
+					}
+				}else{
+					idPick = idOrName;
+				}
+
+				if(interact.hashedEntries[idPick] != undefined){
+					if(interact.hashedEntries[idPick].type == "file"){
+						interact.hashedEntries[idPick].element.getElementsByTagName("div")[0].style.backgroundImage = "url('"+img+"')";
+						interact.hashedEntries[idPick].image = img;
 						for(var i=0; i<interact.sharedResourceFolderJs.length; i++){
-							interact.sharedResourceFolderJs[i].getHashes()[id].element.getElementsByTagName("img")[0].src = img;
-							interact.sharedResourceFolderJs[i].getHashes()[id].image = img;
+							interact.sharedResourceFolderJs[i].getHashes()[idPick].element.getElementsByTagName("div")[0].style.backgroundImage = "url('"+img+"')";
+							interact.sharedResourceFolderJs[i].getHashes()[idPick].image = img;
 						}
 					}
 					outsideFunctions.sticker = undefined;
@@ -1742,9 +1804,13 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 			},
 			getNameAtPosition: function(position){
 				var atPosition = {v: 0};
-				return helper.checkForName(rootContent, atPosition, position);
+				return helper.checkForName(rootContent.content, atPosition, position);
 			},
 			insertData: function(dataArray){
+				if(dataArray == undefined){
+					console.warn("Inserted data is undefined");
+					return;
+				}
 				if(dataArray.length != 0 && dataArray.replace(/ /g, '') != ''){
 					dataArray = JSON.parse(dataArray);
 					helper.parseMetaData(rootContent, dataArray);
@@ -1765,14 +1831,13 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 			createFile: function(name, onCreate){
 				itemCreate.createFile(name, onCreate);
 			},
-			selectItem: function(fileName, fileId){
-				if(fileName != undefined){
-					helper.selectFile(rootContent, fileName);
-				}else if(fileId != undefined){
-					helper.selectFile(rootContent, fileId);
-				}
+			selectItem: function(identifier){
+				helper.selectFile(rootContent, identifier);
 			},
-			flush: function(master){
+			deSelect: function(){
+				helper.deSelect();
+			},
+			flush: function(){
 				resetMe();
 				for(var i=0; i<interact.sharedResourceFolderJs.length; i++){
 					interact.sharedResourceFolderJs[i].reset();
@@ -1832,7 +1897,6 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 			interact.idCounter = 0;
 			rootContent.content.length = 0;
 			interact.namesOfFolders.length = 0;
-			interact.namesOfFiles.length = 0;
 			interact.hashedEntries.length = 0;
 		}
 
@@ -1840,7 +1904,7 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 			params.itemName = ((params.itemName == undefined) ? "File" : params.itemName);
 			params.disableInteraction = ((params.disableInteraction == undefined) ? false : params.disableInteraction);
 			params.onlyUniqueNames = ((params.onlyUniqueNames == undefined) ? false : params.onlyUniqueNames);
-			params.createItemButtonOn = ((params.createItemButtonOn == undefined) ? false : params.createItemButtonOn);
+			params.createItemButtonOn = ((params.createItemButtonOn == undefined) ? true : params.createItemButtonOn);
 			params.mirror = ((params.mirror == undefined) ? null : params.mirror);
 
 			if(params.mirror != null){
@@ -1863,6 +1927,8 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 			}else{
 				divIn = document.createElement("div");
 			}
+
+			outsideFunctions.thisMainContainer = divIn;
 			
 			var realContainer = document.createElement("div");
 			

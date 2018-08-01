@@ -1,5 +1,5 @@
-define(["folderCreator/folderRenderer",
-	"folderCreator/interaction"], function(folderRenderer,
+define(["folderRenderer",
+	"interaction"], function(folderRenderer,
 		interaction){
 	"use strict";
 	
@@ -95,16 +95,12 @@ define(["folderCreator/folderRenderer",
 					if(name != null && name.replace(/ /g, '') != ''){
 						var nameExists = false;
 						if(interact.params.onlyUniqueNames){
-							for(var i=0; i<interact.namesOfFiles.length; i++){
-								if(interact.namesOfFiles[i] == name){
-									nameExists = true;
-									break;
-								}
+							if(nameExistsGlobal(name)){
+								nameExists = true;
 							}
 						}
 						if(!nameExists){
 							createItem(name, true);
-							interact.namesOfFiles.push(name);
 						}else{
 							var errMess = "An item with that name already exists";
 							if(name.replace(/ /g, '') == ''){
@@ -274,7 +270,6 @@ define(["folderCreator/folderRenderer",
 			outsideFunctions.sticker = undefined;
 
 			interact.hashedEntries[newFile.id] = newFile;
-			interact.namesOfFiles.push(newFile.name);
 
 			interact.newlyCreatedFile = newFile;
 			//return newFile;
@@ -285,15 +280,14 @@ define(["folderCreator/folderRenderer",
 
 		function checkFileNameAlreayExists(contentArr, targetName){
 			if(interact.params.onlyUniqueNames){
-				for(var i=0; i<interact.namesOfFiles.length; i++){
-					if(interact.namesOfFiles[i] == targetName){
-						return true;
-					}
+				if(nameExistsGlobal(targetName)){
+					return true;
 				}
 			}
 
 			for(var i=0; i<contentArr.length; i++){
 				if(contentArr[i].name == targetName){
+					console.log("here2 ");
 					return true;
 				}
 			}
@@ -301,6 +295,16 @@ define(["folderCreator/folderRenderer",
 			return false;
 		}
 
+
+		function nameExistsGlobal(name){
+			var keys = Object.keys(interact.hashedEntries);
+			for(var i=0; i<keys.length; i++){
+				if(interact.hashedEntries[keys[i]].name == name){
+					return true;
+				}
+			}
+			return false;
+		}
 
 		function checkFolderNameAlreayExists(contentArr, targetName){
 			if(interact.params.onlyUniqueNames){
