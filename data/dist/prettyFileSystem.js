@@ -1513,4 +1513,5 @@ createFolder = function (itemCreation, inputPrompt, helpFunctions) {
 }(itemCreation, inputPrompt, helpFunctions);
 
 
+  return createFolder;
 }();
