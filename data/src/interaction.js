@@ -37,7 +37,8 @@ define(["menuOptions", "moveItem",
 			if(isTouchDevice()){
 				event = "touchend";
 			}
-			folder.element.addEventListener(event, function(e){
+
+			addMouseAndTouch(folder.element, function(e){
 				e.stopPropagation();
 
 				if(interact.draging == undefined || interact.mouseDrag == false){
@@ -77,7 +78,7 @@ define(["menuOptions", "moveItem",
 				
 
 				
-			}, false);
+			});
 
 
 			if(!interact.params.disableInteraction){
@@ -97,11 +98,7 @@ define(["menuOptions", "moveItem",
 		}
 
 		this.addListenerToFile = function(file){
-			var event = "mouseup";
-			if(isTouchDevice()){
-				event = "touchend";
-			}
-			file.element.addEventListener(event, function(e){
+			addMouseAndTouch(file.element, function(e){
 				e.stopPropagation();
 				
 				interact.holding = false;
@@ -113,7 +110,7 @@ define(["menuOptions", "moveItem",
 						file.element.className = "fileExplorerItem";
 					}else{
 						slectItem(file);
-						outsideFunctions.onClickFile(file.name, file.id, file.image);
+						outsideFunctions.onClickFile(file.name, file.id, file.image, file.customData);
 						file.element.className = "fileExplorerItemSelectedColor";
 						interact.selectedItem = file;
 					}
@@ -132,6 +129,7 @@ define(["menuOptions", "moveItem",
 			});
 
 
+
 			
 			if(!interact.params.disableInteraction){
 				applyDragingListeners(file);
@@ -145,6 +143,17 @@ define(["menuOptions", "moveItem",
 				}, false);
 			}
 			
+		}
+
+
+		function addMouseAndTouch(element, func){
+			element.addEventListener("mouseup", func);
+			if(isTouchDevice()){
+				element.addEventListener("touchend", function(e){
+					e.preventDefault();
+					func();
+				});
+			}
 		}
 
 
@@ -228,7 +237,8 @@ define(["menuOptions", "moveItem",
 		}
 		
 		function isTouchDevice() {
-		    return 'ontouchstart' in document.documentElement;
+			return false;//Touch detection is not working properly
+		    //return 'ontouchstart' in document.documentElement;
 		}
 
 

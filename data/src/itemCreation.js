@@ -37,6 +37,7 @@ define(["folderRenderer",
 			this.parent;
 			this.contains = undefined;
 			this.metaData = [];
+			this.customData = undefined;
 			this.onclick = undefined;
 			this.element;
 			this.image = undefined;
@@ -47,8 +48,8 @@ define(["folderRenderer",
 			return createFolder(folderName, false);
 		}
 
-		this.createFile = function(fileName, runOnCreate){
-			prepareCreatingFile(fileName, runOnCreate);
+		this.createFile = function(fileName, runOnCreate, customData){
+			prepareCreatingFile(fileName, runOnCreate, customData);
 		}
 
 
@@ -188,39 +189,40 @@ define(["folderRenderer",
 		}
 
 
-		function prepareCreatingFile(fileName, onCreate){
+		function prepareCreatingFile(fileName, onCreate, customData){
 			if(fileName == null){
 				messageHandler.prompt("Create file", "Enter a name for the file:", "File name", function(name){
 					if(name != null && name.replace(/ /g, '') != ''){
-						prepareCreatingFile(name, onCreate);
+						prepareCreatingFile(name, onCreate, customData);
 					}
 				});
 			}else{
 				if(interact.selectedItem == undefined){
 					interact.selectedItem = rootContent;
 				}
-
+				
 				if(onCreate){
 					if(outsideFunctions.onCreateNewFile != null){
 						outsideFunctions.onCreateNewFile(fileName, interact.idCounter, function(){
-							return createItem(fileName, onCreate);
+							return createItem(fileName, onCreate, customData);
 						});
 					}else{
-						createItem(fileName, onCreate);
+						createItem(fileName, onCreate, customData);
 					}
 				}else{
-					createItem(fileName, onCreate);
+					createItem(fileName, onCreate, customData);
 				}
 			}
 		}
 
-		function createItem(fileName, onCreate){
+		function createItem(fileName, onCreate, customData){
 			
 			var newFile = new fileStruct();
 			newFile.image = outsideFunctions.sticker;
 			newFile.id = interact.idCounter;
 			newFile.name = fileName;
 			newFile.contains = interact.selectedItem;
+			newFile.customData = customData;
 			newFile.element = renderer.createFile(newFile);
 			if(interact.selectedItem.content == undefined){//We have selected a file, take it's parent folder
 				if(checkFileNameAlreayExists(interact.selectedItem.parent.content, fileName) && onCreate){

@@ -147,7 +147,7 @@ define('itemDeleter',[], function(){
 			var deletedName = deleteItem.name, deletedId = deleteItem.id;
 
 			for(var i=0; i<interact.sharedResourceFolderJs.length; i++){
-				var copyElement = interact.sharedResourceFolderJs[i].getHashes()[targetId].element;
+				var copyElement = interact.sharedResourceFolderJs[i].getHashes()[deletedId].element;
 				copyElement.parentElement.removeChild(copyElement);
 			}
 
@@ -616,8 +616,9 @@ define('menuOptions',["itemDeleter", "moveItem"], function(itemDeleter, moveItem
 
 		function checkFileNameAlreayExists(contentArr, targetName){
 			if(interact.params.onlyUniqueNames){
-				for(var i=0; i<interact.namesOfFiles.length; i++){
-					if(interact.namesOfFiles[i] == targetName){
+				var keys = Object.keys(interact.hashedEntries);
+				for(var i=0; i<keys.length; i++){
+					if(interact.hashedEntries[keys[i]].name == targetName){
 						return true;
 					}
 				}
@@ -737,7 +738,8 @@ define('interaction',["menuOptions", "moveItem",
 			if(isTouchDevice()){
 				event = "touchend";
 			}
-			folder.element.addEventListener(event, function(e){
+
+			addMouseAndTouch(folder.element, function(e){
 				e.stopPropagation();
 
 				if(interact.draging == undefined || interact.mouseDrag == false){
@@ -777,7 +779,7 @@ define('interaction',["menuOptions", "moveItem",
 				
 
 				
-			}, false);
+			});
 
 
 			if(!interact.params.disableInteraction){
@@ -797,11 +799,7 @@ define('interaction',["menuOptions", "moveItem",
 		}
 
 		this.addListenerToFile = function(file){
-			var event = "mouseup";
-			if(isTouchDevice()){
-				event = "touchend";
-			}
-			file.element.addEventListener(event, function(e){
+			addMouseAndTouch(file.element, function(e){
 				e.stopPropagation();
 				
 				interact.holding = false;
@@ -813,7 +811,7 @@ define('interaction',["menuOptions", "moveItem",
 						file.element.className = "fileExplorerItem";
 					}else{
 						slectItem(file);
-						outsideFunctions.onClickFile(file.name, file.id, file.image);
+						outsideFunctions.onClickFile(file.name, file.id, file.image, file.customData);
 						file.element.className = "fileExplorerItemSelectedColor";
 						interact.selectedItem = file;
 					}
@@ -832,6 +830,7 @@ define('interaction',["menuOptions", "moveItem",
 			});
 
 
+
 			
 			if(!interact.params.disableInteraction){
 				applyDragingListeners(file);
@@ -845,6 +844,17 @@ define('interaction',["menuOptions", "moveItem",
 				}, false);
 			}
 			
+		}
+
+
+		function addMouseAndTouch(element, func){
+			element.addEventListener("mouseup", func);
+			if(isTouchDevice()){
+				element.addEventListener("touchend", function(e){
+					e.preventDefault();
+					func();
+				});
+			}
 		}
 
 
@@ -928,7 +938,8 @@ define('interaction',["menuOptions", "moveItem",
 		}
 		
 		function isTouchDevice() {
-		    return 'ontouchstart' in document.documentElement;
+			return false;//Touch detection is not working properly
+		    //return 'ontouchstart' in document.documentElement;
 		}
 
 
@@ -982,6 +993,7 @@ define('itemCreation',["folderRenderer",
 			this.parent;
 			this.contains = undefined;
 			this.metaData = [];
+			this.customData = undefined;
 			this.onclick = undefined;
 			this.element;
 			this.image = undefined;
@@ -992,8 +1004,8 @@ define('itemCreation',["folderRenderer",
 			return createFolder(folderName, false);
 		}
 
-		this.createFile = function(fileName, runOnCreate){
-			prepareCreatingFile(fileName, runOnCreate);
+		this.createFile = function(fileName, runOnCreate, customData){
+			prepareCreatingFile(fileName, runOnCreate, customData);
 		}
 
 
@@ -1133,39 +1145,40 @@ define('itemCreation',["folderRenderer",
 		}
 
 
-		function prepareCreatingFile(fileName, onCreate){
+		function prepareCreatingFile(fileName, onCreate, customData){
 			if(fileName == null){
 				messageHandler.prompt("Create file", "Enter a name for the file:", "File name", function(name){
 					if(name != null && name.replace(/ /g, '') != ''){
-						prepareCreatingFile(name, onCreate);
+						prepareCreatingFile(name, onCreate, customData);
 					}
 				});
 			}else{
 				if(interact.selectedItem == undefined){
 					interact.selectedItem = rootContent;
 				}
-
+				
 				if(onCreate){
 					if(outsideFunctions.onCreateNewFile != null){
 						outsideFunctions.onCreateNewFile(fileName, interact.idCounter, function(){
-							return createItem(fileName, onCreate);
+							return createItem(fileName, onCreate, customData);
 						});
 					}else{
-						createItem(fileName, onCreate);
+						createItem(fileName, onCreate, customData);
 					}
 				}else{
-					createItem(fileName, onCreate);
+					createItem(fileName, onCreate, customData);
 				}
 			}
 		}
 
-		function createItem(fileName, onCreate){
+		function createItem(fileName, onCreate, customData){
 			
 			var newFile = new fileStruct();
 			newFile.image = outsideFunctions.sticker;
 			newFile.id = interact.idCounter;
 			newFile.name = fileName;
 			newFile.contains = interact.selectedItem;
+			newFile.customData = customData;
 			newFile.element = renderer.createFile(newFile);
 			if(interact.selectedItem.content == undefined){//We have selected a file, take it's parent folder
 				if(checkFileNameAlreayExists(interact.selectedItem.parent.content, fileName) && onCreate){
@@ -1527,7 +1540,7 @@ define('helpFunctions',[], function(){
 				}else if(data[i].type == "file"){
 					interact.selectedItem = putIn;
 					outsideFunctions.sticker = data[i].image;
-					itemCreate.createFile(data[i].name);
+					itemCreate.createFile(data[i].name, false, data[i].customData);
 				}
 			}
 			
@@ -1815,6 +1828,8 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 					dataArray = JSON.parse(dataArray);
 					helper.parseMetaData(rootContent, dataArray);
 				}
+
+				interact.selectedItem = rootContent;
 			},
 			getStructure: function(returnAsJSON){
 				var contentMeta = [];
@@ -1828,8 +1843,8 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 			createFolder: function(fName){
 				return itemCreate.createFolder(fName);
 			},
-			createFile: function(name, onCreate){
-				itemCreate.createFile(name, onCreate);
+			createFile: function(name, onCreate, customData){
+				itemCreate.createFile(name, onCreate, customData);
 			},
 			selectItem: function(identifier){
 				helper.selectFile(rootContent, identifier);
@@ -1864,11 +1879,11 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 			onDuplicateFile: function(name, id, copyTargetName, copyTargetId){
 
 			},
-			onClickFile: function(fileClicked, id, image){
+			onClickFile: function(fileClicked, id, image, customData){
 
 			},
 			/*onCreateNewFile: function(name, id, procced){
-
+				
 			},*/
 			onCreateNewFile: null,
 			
@@ -1969,9 +1984,6 @@ define('createFolder',["itemCreation", "inputPrompt", "helpFunctions"],
 
 		
 
-
-
-		
 
 
 

@@ -13,7 +13,7 @@ define([], function(){
 				}else if(data[i].type == "file"){
 					interact.selectedItem = putIn;
 					outsideFunctions.sticker = data[i].image;
-					itemCreate.createFile(data[i].name);
+					itemCreate.createFile(data[i].name, false, data[i].customData);
 				}
 			}
 			

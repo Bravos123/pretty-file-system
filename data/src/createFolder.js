@@ -128,6 +128,8 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 					dataArray = JSON.parse(dataArray);
 					helper.parseMetaData(rootContent, dataArray);
 				}
+
+				interact.selectedItem = rootContent;
 			},
 			getStructure: function(returnAsJSON){
 				var contentMeta = [];
@@ -141,8 +143,8 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 			createFolder: function(fName){
 				return itemCreate.createFolder(fName);
 			},
-			createFile: function(name, onCreate){
-				itemCreate.createFile(name, onCreate);
+			createFile: function(name, onCreate, customData){
+				itemCreate.createFile(name, onCreate, customData);
 			},
 			selectItem: function(identifier){
 				helper.selectFile(rootContent, identifier);
@@ -177,11 +179,11 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 			onDuplicateFile: function(name, id, copyTargetName, copyTargetId){
 
 			},
-			onClickFile: function(fileClicked, id, image){
+			onClickFile: function(fileClicked, id, image, customData){
 
 			},
 			/*onCreateNewFile: function(name, id, procced){
-
+				
 			},*/
 			onCreateNewFile: null,
 			
@@ -282,9 +284,6 @@ define(["itemCreation", "inputPrompt", "helpFunctions"],
 
 		
 
-
-
-		
 
 
 

@@ -292,8 +292,9 @@ define(["itemDeleter", "moveItem"], function(itemDeleter, moveItem){
 
 		function checkFileNameAlreayExists(contentArr, targetName){
 			if(interact.params.onlyUniqueNames){
-				for(var i=0; i<interact.namesOfFiles.length; i++){
-					if(interact.namesOfFiles[i] == targetName){
+				var keys = Object.keys(interact.hashedEntries);
+				for(var i=0; i<keys.length; i++){
+					if(interact.hashedEntries[keys[i]].name == targetName){
 						return true;
 					}
 				}

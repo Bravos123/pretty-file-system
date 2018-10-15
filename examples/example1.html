@@ -23,10 +23,7 @@
 	</style>
 </head>
 <body>
-<<<<<<< HEAD
-=======
 	<a href="https://github.com/Bravos123/pretty-file-system"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
->>>>>>> bug fixes
 	
 <div id="fileSystem"></div>
 
@@ -42,8 +39,9 @@
 	<button id="load">Load system</button>
 </div>
 
-<script src="../data/dist/prettyFileSystem.js"></script>
+<script src="../data/dist/prettyFileSystem.min.js"></script>
 <script>
+
 
 	var previewId;
 
@@ -60,14 +58,10 @@
 	system.onCreateNewFile = function(name, id, proceed){
 		system.prompt("Image", "Include an image source", "", function(input){
 			if(input != null && input.replace(/ /g, '') != ''){
-<<<<<<< HEAD
 				system.sticker = input;
-				proceed();
-=======
 				if(proceed()){
 					system.sticker = input;//This code executes if file explorer could create a file successfully. Reasons for it to fail could be if there already exists a similar file name and unique file names are set to true.
 				}
->>>>>>> bug fixes
 			}
 		});
 	};

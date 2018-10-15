@@ -42,6 +42,22 @@ Itterates through every item and returns the item at position *p*.
 ###### insertData(JSONData)
 Recreates a file system based on the JSON string *JSONData*.
 
+The structure to insert an item would be:
+{
+	type: "file",
+	name: STRING,
+	image: STRING,
+	customData: any Javascript variable type
+}
+
+The structure to insert an item would be:
+{
+	type: "folder",
+	name: STRING,
+	contains: an array that may contain more folder or file objects.
+}
+
+
 ###### getStructure(returnAsJSON = false)
 Returns the root content object. If *returnAsJSON* is true a JSON string is returned instead.
 This function combined with *insertData* allows you to save and load states.
@@ -49,9 +65,10 @@ This function combined with *insertData* allows you to save and load states.
 ###### createFolder(folderName)
 Creates folder with name *folderName*. To specify where it should be created use *selectItem*.
 
-###### createFile(fileName, triggerCreateFunc)
+###### createFile(fileName, triggerCreateFunc, customData)
 Creates file with name *fileName*. To specify where it should be created use *selectItem*.
 If the file is created successfully and *triggerCreateFunc* is true, *onCreateNewFile* will be executed.
+*customData* is a property where you can store any custom data in the item object.
 
 ###### selectItem(identifier)
 Selects the item based on *identifier*. If *identifier* is a string the item with the name *identifier*
@@ -102,8 +119,9 @@ This function is executed when an item is moved down. It's name and id is given 
 This function is executed when a file is duplicated. Duplicated target's name and id is given as parameters, as well as 
 the new duplicate file's name and id.
 
-###### onClickFile(fileClicked, id, image)
+###### onClickFile(fileClicked, id, image, customData)
 This function is executed when a file is clicked. It's name(*fileClicked*),  id and image is given as parameters.
+If the clicked item had any data set on it's *customData* it will be sent as the parameter *customData*.
 
 ###### onCreateNewFile(name, id, procced)
 This function is executed when a new file is created. The new file's name and id is given as parameters.
@@ -138,14 +156,11 @@ Example:
 system.onCreateNewFile = function(name, id, procced){
   system.prompt("Image", "Include an image source", "", function(input){
 			if(input != null && input.replace(/ /g, '') != ''){
-<<<<<<< HEAD
 				system.sticker = input;
 				proceed();
-=======
 				if(proceed()){
 					system.sticker = input;
 				}
->>>>>>> bug fixes
 			}
 		});
 };

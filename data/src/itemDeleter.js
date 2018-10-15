@@ -46,7 +46,7 @@ define([], function(){
 			var deletedName = deleteItem.name, deletedId = deleteItem.id;
 
 			for(var i=0; i<interact.sharedResourceFolderJs.length; i++){
-				var copyElement = interact.sharedResourceFolderJs[i].getHashes()[targetId].element;
+				var copyElement = interact.sharedResourceFolderJs[i].getHashes()[deletedId].element;
 				copyElement.parentElement.removeChild(copyElement);
 			}
 
