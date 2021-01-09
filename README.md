@@ -171,9 +171,4 @@ This library is developed in RequireJS. If you want to make changes you need to 
 From there you use r.js to compile it into a single file, which will still require require-min.js to function. If you want to 
 create a stand alone version, like the prebuilt version /data/dist/prettyFileSystem.js, use AMDclean http://gregfranko.com/amdclean/.
 
-# Examples
-[base example](https://www.vitalkia.com/jsLibraries/FileExplorer/examples/example1.html)
 
-[Mirroring example](https://www.vitalkia.com/jsLibraries/FileExplorer/examples/mirroring.html)
-
-[Different styles example](https://www.vitalkia.com/jsLibraries/FileExplorer/examples/stylesDisplay.html)
