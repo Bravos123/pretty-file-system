@@ -1,7 +1,10 @@
+Note from author: 
+Holy shit this code is messy O.o! The graphics looks nice tough... This should probably not be used. I created it mostly to learn, but I don't like to remove stuff so I'm gonna leave it. 
+
 # pretty-file-system
 
 ## About:
-Pretty file system is a simple but powerfull tool to manage file systems.
+Pretty file system (PFS) is a simple but powerfull tool to manage file systems.
 
 
 ## How to use:
