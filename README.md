@@ -1,7 +1,7 @@
 # pretty-file-system
 
 ## About:
-Pretty file system(PFS) is a simple but powerfull tool to manage file systems.
+Pretty file system is a simple but powerfull tool to manage file systems.
 
 
 ## How to use:
