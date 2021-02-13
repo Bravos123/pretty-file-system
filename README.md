@@ -1,5 +1,5 @@
 Note from author: 
-Holy shit this code is messy O.o! The graphics looks nice tough... This should probably not be used. I created it mostly to learn, but I don't like to remove stuff so I'm gonna leave it. 
+Holy shit this code is messy O.o! The graphics looks nice tough... This should not be used it has many kinks and quirks. I created it mostly to learn, but I don't like to remove stuff so I'm gonna leave it. 
 
 # pretty-file-system
 
@@ -160,7 +160,7 @@ system.onCreateNewFile = function(name, id, procced){
   system.prompt("Image", "Include an image source", "", function(input){
 			if(input != null && input.replace(/ /g, '') != ''){
 				system.sticker = input;
-				proceed();
+				
 				if(proceed()){
 					system.sticker = input;
 				}
