@@ -126,9 +126,9 @@ the new duplicate file's name and id.
 This function is executed when a file is clicked. It's name(*fileClicked*),  id and image is given as parameters.
 If the clicked item had any data set on it's *customData* it will be sent as the parameter *customData*.
 
-###### onCreateNewFile(name, id, procced)
+###### onCreateNewFile(name, id, proceed)
 This function is executed when a new file is created. The new file's name and id is given as parameters.
-If this function is used, you must allways call procced(); somewhere in your custom function. *This is because the custom
+If this function is used, you must allways call proceed(); somewhere in your custom function. *This is because the custom
 input is asynchronous so the rest of the function needs to be called as a separet function when the input is done.*
 
 Example:
@@ -156,7 +156,7 @@ After that it will be reset to undefined. This allows you to apply an image to c
 
 Example:
 ```
-system.onCreateNewFile = function(name, id, procced){
+system.onCreateNewFile = function(name, id, proceed){
   system.prompt("Image", "Include an image source", "", function(input){
 			if(input != null && input.replace(/ /g, '') != ''){
 				system.sticker = input;
